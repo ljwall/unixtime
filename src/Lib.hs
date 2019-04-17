@@ -1,8 +1,8 @@
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE ViewPatterns, ScopedTypeVariables #-}
 
 module Lib
   ( utcTimeFromUnix
-  , utcTimeFromStringEither
+  , readIntegerEither
   ) where
 
 import Data.Time
@@ -15,13 +15,9 @@ epoch = UTCTime (fromGregorian 1970 0 0) 0
 utcTimeFromUnix :: Integral a => a -> UTCTime
 utcTimeFromUnix = flip addUTCTime epoch . fromIntegral
 
--- | Parse a string value as an Integer representing a Unix timestamp, and
--- convert to a 'Either' 'String' 'UTCTime`. A 'Left' value indicates a parse
--- error.
-utcTimeFromStringEither :: String -> Either String UTCTime
-utcTimeFromStringEither s = utcTimeFromUnix <$> tryRead s
-  where tryRead (readMaybe' -> Just t) = Right t
-        tryRead (readMaybe' -> Nothing) = Left $ "Can't parse \""++s++"\" as Integer"
-
-        readMaybe' :: String -> Maybe Integer
-        readMaybe' = readMaybe
+-- | Like 'readEither' except specialised to 'Integer' and with user-friendly
+-- error messages on parse failure ('Left' result).
+readIntegerEither :: String -> Either String Integer
+readIntegerEither (readMaybe -> Just t) = Right t
+readIntegerEither s@(readMaybe -> Nothing :: Maybe Integer) =
+  Left $ "Can't parse \""++s++"\" as Integer"
