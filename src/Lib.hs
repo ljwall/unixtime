@@ -1,12 +1,11 @@
-{-# LANGUAGE ViewPatterns, ScopedTypeVariables #-}
-
 module Lib
   ( utcTimeFromUnix
   , readIntegerEither
   ) where
 
 import Data.Time
-import Text.Read (readMaybe)
+import Text.Read (readEither)
+import Control.Arrow (left)
 
 epoch :: UTCTime
 epoch = UTCTime (fromGregorian 1970 0 0) 0
@@ -18,6 +17,4 @@ utcTimeFromUnix = flip addUTCTime epoch . fromIntegral
 -- | Like 'readEither' except specialised to 'Integer' and with user-friendly
 -- error messages on parse failure ('Left' result).
 readIntegerEither :: String -> Either String Integer
-readIntegerEither (readMaybe -> Just t) = Right t
-readIntegerEither s@(readMaybe -> Nothing :: Maybe Integer) =
-  Left $ "Can't parse \""++s++"\" as Integer"
+readIntegerEither s = left (const $ "Can't parse \""++s++"\" as Integer") . readEither $ s
